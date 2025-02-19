@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "thermalpi"
+version = "0.1.0"
+description = ""
+authors = ["Peter G <66267479+stonelips@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+websockets = "^15.0"
+usbtc08 = {git = "git@github.com:bankrasrg/usbtc08", subdirectory = "source"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
