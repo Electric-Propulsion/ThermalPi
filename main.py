@@ -12,7 +12,7 @@ pico = PicoUSBTC08()
 
 async def handler(sock):
     try:
-        print("Connection opened")
+        #print("Connection opened")
 
         while True:
             # Data format: {'command': <command>, 'param1': <param1>, 'param2': <param2>, ...}
@@ -36,8 +36,8 @@ async def handler(sock):
                 await sock.send(json.dumps(data))
     
     except websockets.exceptions.ConnectionClosedOK:
-        print("Connection closed.")
-
+        #print("Connection closed.")
+        pass
     
         
         

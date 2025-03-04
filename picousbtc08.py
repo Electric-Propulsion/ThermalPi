@@ -112,11 +112,10 @@ class PicoUSBTC08():
         elif rv == -1:
             self.check_for_error(0, self.open_instrument)
 
-        # Obtain minimum measurment interval for device
-        rv = usbtc08.usb_tc08_get_minimum_interval_ms(self.handle)
-        self.check_for_error(rv, self.open_instrument)
-        self.min_interval = rv
-    
+        # By default enable all channels so that EPComms does not crash
+        for i in range(0,8):
+            self.configure_channel(i+1, 'K')
+
     def close_instrument(self) -> None:
         rv = usbtc08.usb_tc08_close_unit(self.handle)
         self.check_for_error(rv, self.close_instrument)
@@ -125,14 +124,14 @@ class PicoUSBTC08():
         if channel == usbtc08.USBTC08_CHANNEL_CJC:
             assert tc_type == 'C'
         else:
-            assert tc_type in ('B', 'E', 'J', 'K', 'N', 'R', 'S', 'T', '')
+            assert tc_type in ('B', 'E', 'J', 'K', 'N', 'R', 'S', 'T', ' ')
 
         self.channel_data[channel].type = tc_type
         rv = usbtc08.usb_tc08_set_channel(self.handle, channel, ord(tc_type))
         self.check_for_error(rv, self.configure_channel)
     
     def disable_channel(self, channel: int) -> None:
-        self.configure_channel(channel, '')
+        self.configure_channel(channel, ' ')
     
     def measure_all_channels(self) -> float:
         rv = usbtc08.usb_tc08_get_single(self.handle, self.channel_buffer, self.overflow_flags, self.unit)
