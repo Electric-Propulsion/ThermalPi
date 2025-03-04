@@ -8,9 +8,11 @@ import json
 
 from picousbtc08 import PicoUSBTC08
 
-async def handler(sock: websockets.websocket):
+pico = PicoUSBTC08()
+
+async def handler(sock):
     try:
-        pico = PicoUSBTC08()
+        print("Connection opened")
 
         while True:
             # Data format: {'command': <command>, 'param1': <param1>, 'param2': <param2>, ...}
@@ -21,12 +23,6 @@ async def handler(sock: websockets.websocket):
             if command["command"] == "open_instrument":
                 pico.open_instrument()
 
-            elif command["command"] == "enable_sampling":
-                pico.enable_sampling(command["sampling_interval"])
-
-            elif command["command"] == "disable_sampling":
-                pico.disable_sampling()
-
             elif command["command"] == "configure_channel":
                 pico.configure_channel(command["channel"], command["type"])
 
@@ -35,15 +31,15 @@ async def handler(sock: websockets.websocket):
 
             elif command["command"] == "measure_all_channels":
                 pico.measure_all_channels()
-                keys = [f"ch_{i}" for i in range(len(pico.channel_data))]
                 vals = [pico.channel_data[i].last_measurement for i in range(len(pico.channel_data))]
-                data = {k:v for (k,v) in zip(keys, vals)}
+                data = {"temps": vals}
                 await sock.send(json.dumps(data))
     
-    except websockets.ConnectionClosedError:
+    except websockets.exceptions.ConnectionClosedOK:
         print("Connection closed.")
-    finally:
-        pico.close_instrument()
+
+    
+        
         
 
 async def main():
@@ -52,3 +48,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+    pico.close_instrument()
+    print("Closed instrument.")

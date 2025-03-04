@@ -4,11 +4,11 @@ version = "0.1.0"
 description = ""
 authors = ["Peter G <66267479+stonelips@users.noreply.github.com>"]
 readme = "README.md"
+package-mode=false
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"
 websockets = "^15.0"
-usbtc08 = {git = "git@github.com:bankrasrg/usbtc08", subdirectory = "source"}
 
 
 [build-system]

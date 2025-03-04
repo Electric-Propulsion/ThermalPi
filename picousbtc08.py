@@ -3,7 +3,7 @@ Pico USB-TC08 Interface using the Python wrapper by bankrasrg.
 https://github.com/bankrasrg/usbtc08
 """
 
-import usbtc08
+import usbtc08.usbtc08 as usbtc08
 import atexit
 
 class usbtc08_error(Exception):
@@ -60,9 +60,9 @@ class PicoUSBTC08_Units():
 
 
 class PicoUSBTC08_ChannelData():
-    def __init__(self, channel_no: int, type):
+    def __init__(self, channel_no: int, tc_type):
         self.channel_no: int = channel_no
-        self.type: str = type
+        self.tc_type: str = tc_type
         self.last_measurement: float = 0.0
 
 class PicoUSBTC08():
@@ -76,16 +76,17 @@ class PicoUSBTC08():
         self.min_interval = None
         
         self.channel_data = {
-            0: PicoUSBTC08_ChannelData(usbtc08.USBTC0_CHANNEL_CJC, 'C'),
-            1: PicoUSBTC08_ChannelData(usbtc08.USBTC0_CHANNEL_1, 'K'),
-            2: PicoUSBTC08_ChannelData(usbtc08.USBTC0_CHANNEL_2, 'K'),
-            3: PicoUSBTC08_ChannelData(usbtc08.USBTC0_CHANNEL_3, 'K'),
-            4: PicoUSBTC08_ChannelData(usbtc08.USBTC0_CHANNEL_4, 'K'),
-            5: PicoUSBTC08_ChannelData(usbtc08.USBTC0_CHANNEL_5, 'K'),
-            6: PicoUSBTC08_ChannelData(usbtc08.USBTC0_CHANNEL_6, 'K'),
-            7: PicoUSBTC08_ChannelData(usbtc08.USBTC0_CHANNEL_7, 'K'),
-            8: PicoUSBTC08_ChannelData(usbtc08.USBTC0_CHANNEL_8, 'K'),
+            0: PicoUSBTC08_ChannelData(usbtc08.USBTC08_CHANNEL_CJC, 'C'),
+            1: PicoUSBTC08_ChannelData(usbtc08.USBTC08_CHANNEL_1, 'K'),
+            2: PicoUSBTC08_ChannelData(usbtc08.USBTC08_CHANNEL_2, 'K'),
+            3: PicoUSBTC08_ChannelData(usbtc08.USBTC08_CHANNEL_3, 'K'),
+            4: PicoUSBTC08_ChannelData(usbtc08.USBTC08_CHANNEL_4, 'K'),
+            5: PicoUSBTC08_ChannelData(usbtc08.USBTC08_CHANNEL_5, 'K'),
+            6: PicoUSBTC08_ChannelData(usbtc08.USBTC08_CHANNEL_6, 'K'),
+            7: PicoUSBTC08_ChannelData(usbtc08.USBTC08_CHANNEL_7, 'K'),
+            8: PicoUSBTC08_ChannelData(usbtc08.USBTC08_CHANNEL_8, 'K'),
         }
+
 
     def check_for_error(self, return_value: int, caller: callable):
         """Checks return value of a usbtc08 function and if an error ocurred, returns the error. 
@@ -104,6 +105,7 @@ class PicoUSBTC08():
         rv = usbtc08.usb_tc08_open_unit() 
         if rv > 0:
             self.handle = rv
+            self.configure_channel(1, 'K')
         elif rv == 0:
             print("No more Pico USB TC-08 are available to open.")
             return
@@ -111,31 +113,22 @@ class PicoUSBTC08():
             self.check_for_error(0, self.open_instrument)
 
         # Obtain minimum measurment interval for device
-        rv = usbtc08.usbtc08_get_minimum_interval_ms(self.handle)
-        self.check_for_error(rv)
+        rv = usbtc08.usb_tc08_get_minimum_interval_ms(self.handle)
+        self.check_for_error(rv, self.open_instrument)
         self.min_interval = rv
     
     def close_instrument(self) -> None:
         rv = usbtc08.usb_tc08_close_unit(self.handle)
         self.check_for_error(rv, self.close_instrument)
 
-    def enable_sampling(self, sampling_interval: float) -> None:
-        assert sampling_interval >= self.min_interval
-        rv = usbtc08.usb_tc08_run(self.handle, sampling_interval)
-        self.check_for_error(rv, self.enable_sampling)
-    
-    def disable_sampling(self) -> None:
-        rv = usbtc08.usb_tc08_stop(self.handle)
-        self.check_for_error(rv, self.disable_sampling)
-
-    def configure_channel(self, channel: int, type: str) -> None:
-        if channel == usbtc08.USBTC0_CHANNEL_CJC:
-            assert type == 'C'
+    def configure_channel(self, channel: int, tc_type: str) -> None:
+        if channel == usbtc08.USBTC08_CHANNEL_CJC:
+            assert tc_type == 'C'
         else:
-            assert type in ('B', 'E', 'J', 'K', 'N', 'R', 'S', 'T', '')
+            assert tc_type in ('B', 'E', 'J', 'K', 'N', 'R', 'S', 'T', '')
 
-        self.channel_data[channel].type = type
-        rv = usbtc08.usb_tc08_set_channel(self.handle, channel, ord(type))
+        self.channel_data[channel].type = tc_type
+        rv = usbtc08.usb_tc08_set_channel(self.handle, channel, ord(tc_type))
         self.check_for_error(rv, self.configure_channel)
     
     def disable_channel(self, channel: int) -> None:

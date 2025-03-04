@@ -1,0 +1,9 @@
+Pico Technology TC-08 thermocouple data logger
+Driver version: Usb
+Kernel driver version: 1.0
+Hardware version: 1
+Variant: 3
+Serial: AO136/499
+Calibration date: 10Aug22
+Max sample interval: 900 ms
+Used sample interval: 900 ms
